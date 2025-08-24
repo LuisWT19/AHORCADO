@@ -1,5 +1,9 @@
+import sys
 import random
-import os
+from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, 
+                             QLabel, QLineEdit, QPushButton, 
+                             QHBoxLayout, QSizePolicy)
+from PyQt6.QtCore import Qt
 
 # --- Datos del juego ---
 # Lista de palabras y sus pistas.
@@ -16,7 +20,6 @@ PALABRAS_Y_PISTAS = {
 
 # Dibujos del Ahorcado para cada intento.
 DIBUJOS_AHORCADO = [
-    # 0 intentos fallidos
     """
        -----
        |   |
@@ -26,7 +29,6 @@ DIBUJOS_AHORCADO = [
            |
     ---------
     """,
-    # 1 intento fallido
     """
        -----
        |   |
@@ -36,7 +38,6 @@ DIBUJOS_AHORCADO = [
            |
     ---------
     """,
-    # 2 intentos fallidos
     """
        -----
        |   |
@@ -46,7 +47,6 @@ DIBUJOS_AHORCADO = [
            |
     ---------
     """,
-    # 3 intentos fallidos
     """
        -----
        |   |
@@ -56,137 +56,170 @@ DIBUJOS_AHORCADO = [
            |
     ---------
     """,
-    # 4 intentos fallidos
     """
        -----
        |   |
        O   |
-      /|\  |
+      /|\\  |
            |
            |
     ---------
     """,
-    # 5 intentos fallidos
     """
        -----
        |   |
        O   |
-      /|\  |
+      /|\\  |
       /    |
            |
     ---------
     """,
-    # 6 intentos fallidos - PERDIDO
     """
        -----
        |   |
        O   |
-      /|\  |
-      / \  |
+      /|\\  |
+      / \\  |
            |
     ---------
     """
 ]
 
-# --- Funciones del juego ---
 
-def limpiar_consola():
-    """Limpia la pantalla de la consola para un juego más limpio."""
-    os.system('cls' if os.name == 'nt' else 'clear')
-
-def mostrar_bienvenida():
-    """
-    Muestra el mensaje de bienvenida y espera que el usuario presione Enter.
-    """
-    print("=========================")
-    print("= JUEGO DEL AHORCADO    =")
-    print("=========================")
-    input("Presiona Enter para jugar...")
-
-def seleccionar_palabra():
-    """
-    Selecciona una palabra aleatoria y su pista del diccionario.
-    Devuelve la palabra en mayúsculas y su pista.
-    """
-    palabra_secreta = random.choice(list(PALABRAS_Y_PISTAS.keys()))
-    pista = PALABRAS_Y_PISTAS[palabra_secreta]
-    return palabra_secreta.upper(), pista
-
-def jugar():
-    """
-    Función principal que contiene la lógica del juego del Ahorcado.
-    """
-    limpiar_consola()
-    
-    palabra_secreta, pista = seleccionar_palabra()
-    
-    letras_adivinadas = ["_"] * len(palabra_secreta)
-    letras_intentadas = set()
-    intentos_fallidos = 0
-    max_intentos = 6
-    
-    while intentos_fallidos < max_intentos and "".join(letras_adivinadas) != palabra_secreta:
-        limpiar_consola()
+class VentanaAhorcado(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Juego del Ahorcado - PyQt6")
+        self.setFixedSize(400, 500)
+        self.setStyleSheet("background-color: #f0f0f0;")
         
-        # Muestra el estado actual del juego
-        print(DIBUJOS_AHORCADO[intentos_fallidos])
-        print("\nPista:", pista)
-        print("\nPalabra:", " ".join(letras_adivinadas))
-        print("Letras intentadas:", ", ".join(sorted(list(letras_intentadas))))
-        print(f"Te quedan {max_intentos - intentos_fallidos} intentos.")
+        self.initUI()
+        self.iniciar_juego()
+
+    def initUI(self):
+        # Layout principal de la ventana
+        layout_principal = QVBoxLayout()
+        layout_principal.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        # Pide una letra al jugador
-        try:
-            letra_usuario = input("\nIngresa una letra: ").upper()
-            
-            # Valida la entrada del usuario
-            if len(letra_usuario) != 1 or not letra_usuario.isalpha():
-                input("Entrada inválida. Ingresa solo una letra. Presiona Enter para continuar...")
-                continue
-            
-            if letra_usuario in letras_intentadas:
-                input("Ya intentaste esa letra. Presiona Enter para continuar...")
-                continue
-                
-            letras_intentadas.add(letra_usuario)
-            
-            # Procesa la letra
-            if letra_usuario in palabra_secreta:
-                print("¡Correcto!")
-                for i, letra_en_palabra in enumerate(palabra_secreta):
-                    if letra_en_palabra == letra_usuario:
-                        letras_adivinadas[i] = letra_usuario
-            else:
-                print("Incorrecto. Pierdes un intento.")
-                intentos_fallidos += 1
-                
-        except (KeyboardInterrupt, EOFError):
-            print("\nJuego cancelado.")
+        # Etiqueta para el dibujo del ahorcado
+        self.label_dibujo = QLabel()
+        self.label_dibujo.setText(DIBUJOS_AHORCADO[0])
+        self.label_dibujo.setStyleSheet("font-family: monospace; font-size: 14px; color: #333;")
+        self.label_dibujo.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout_principal.addWidget(self.label_dibujo)
+
+        # Etiqueta para la palabra
+        self.label_palabra = QLabel()
+        self.label_palabra.setStyleSheet("font-size: 24px; font-weight: bold; color: #007bff;")
+        self.label_palabra.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout_principal.addWidget(self.label_palabra)
+        
+        # Etiqueta para la pista
+        self.label_pista = QLabel()
+        self.label_pista.setStyleSheet("font-style: italic; color: #666;")
+        self.label_pista.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout_principal.addWidget(self.label_pista)
+
+        # Etiqueta para las letras ya intentadas
+        self.label_intentadas = QLabel("Letras intentadas: ")
+        self.label_intentadas.setStyleSheet("font-size: 12px; color: #999;")
+        self.label_intentadas.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout_principal.addWidget(self.label_intentadas)
+        
+        # Etiqueta para los intentos restantes
+        self.label_intentos = QLabel()
+        self.label_intentos.setStyleSheet("font-size: 12px; color: #dc3545;")
+        self.label_intentos.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout_principal.addWidget(self.label_intentos)
+
+        # Contenedor para la entrada de texto y el botón
+        layout_input = QHBoxLayout()
+        layout_input.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        self.entrada_letra = QLineEdit()
+        self.entrada_letra.setFixedSize(50, 30)
+        self.entrada_letra.setMaxLength(1)
+        self.entrada_letra.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout_input.addWidget(self.entrada_letra)
+        
+        self.boton_adivinar = QPushButton("Adivinar")
+        self.boton_adivinar.clicked.connect(self.procesar_adivinar)
+        self.boton_adivinar.setFixedSize(100, 30)
+        self.boton_adivinar.setStyleSheet("background-color: #28a745; color: white; font-weight: bold; border-radius: 5px;")
+        layout_input.addWidget(self.boton_adivinar)
+        
+        layout_principal.addLayout(layout_input)
+
+        # Botón para reiniciar el juego
+        self.boton_reiniciar = QPushButton("Jugar de nuevo")
+        self.boton_reiniciar.clicked.connect(self.iniciar_juego)
+        self.boton_reiniciar.setVisible(False)
+        self.boton_reiniciar.setStyleSheet("background-color: #007bff; color: white; font-weight: bold; border-radius: 5px;")
+        layout_principal.addWidget(self.boton_reiniciar)
+
+        self.setLayout(layout_principal)
+
+    def iniciar_juego(self):
+        self.palabra_secreta, self.pista = random.choice(list(PALABRAS_Y_PISTAS.items()))
+        self.letras_adivinadas = ["_"] * len(self.palabra_secreta)
+        self.letras_intentadas = set()
+        self.intentos_fallidos = 0
+        self.max_intentos = 6
+        
+        self.entrada_letra.setEnabled(True)
+        self.boton_adivinar.setEnabled(True)
+        self.boton_reiniciar.setVisible(False)
+        
+        self.actualizar_interfaz()
+
+    def procesar_adivinar(self):
+        letra_usuario = self.entrada_letra.text().upper()
+        self.entrada_letra.clear()
+        
+        if not letra_usuario.isalpha() or len(letra_usuario) != 1:
+            self.label_intentos.setText("Entrada inválida. Ingresa solo una letra.")
             return
 
-    # --- Fin del juego ---
-    limpiar_consola()
-    print(DIBUJOS_AHORCADO[intentos_fallidos])
-    print("\nPalabra:", palabra_secreta)
-    
-    if "".join(letras_adivinadas) == palabra_secreta:
-        print("\n¡GANASTE!")
-    else:
-        print("\n¡PERDISTE!")
-    
-    # Pregunta si quiere jugar de nuevo
-    while True:
-        respuesta = input("¿Jugar otra vez? (S/N): ").upper()
-        if respuesta == "S":
-            jugar()  # Llama a la función jugar() de nuevo para reiniciar
+        if letra_usuario in self.letras_intentadas:
+            self.label_intentos.setText("Ya intentaste esa letra.")
             return
-        elif respuesta == "N":
-            print("¡Gracias por jugar!")
-            return
+        
+        self.letras_intentadas.add(letra_usuario)
+        
+        if letra_usuario in self.palabra_secreta:
+            self.label_intentos.setText("¡Correcto!")
+            for i, letra_en_palabra in enumerate(self.palabra_secreta):
+                if letra_en_palabra == letra_usuario:
+                    self.letras_adivinadas[i] = letra_usuario
         else:
-            print("Opción no válida. Por favor, ingresa S o N.")
+            self.intentos_fallidos += 1
+            self.label_intentos.setText("Incorrecto. Pierdes un intento.")
+        
+        self.actualizar_interfaz()
+        self.verificar_fin_juego()
+
+    def actualizar_interfaz(self):
+        self.label_dibujo.setText(DIBUJOS_AHORCADO[self.intentos_fallidos])
+        self.label_palabra.setText(" ".join(self.letras_adivinadas))
+        self.label_pista.setText(f"Pista: {self.pista}")
+        self.label_intentadas.setText("Letras intentadas: " + ", ".join(sorted(list(self.letras_intentadas))))
+        self.label_intentos.setText(f"Te quedan {self.max_intentos - self.intentos_fallidos} intentos.")
+
+    def verificar_fin_juego(self):
+        if self.intentos_fallidos >= self.max_intentos:
+            self.label_intentos.setText(f"¡PERDISTE! La palabra era: {self.palabra_secreta}")
+            self.entrada_letra.setEnabled(False)
+            self.boton_adivinar.setEnabled(False)
+            self.boton_reiniciar.setVisible(True)
+        elif "_" not in self.letras_adivinadas:
+            self.label_intentos.setText("¡GANASTE! ¡Felicidades!")
+            self.entrada_letra.setEnabled(False)
+            self.boton_adivinar.setEnabled(False)
+            self.boton_reiniciar.setVisible(True)
 
 # --- Punto de entrada del programa ---
-if __name__ == "__main__":
-    mostrar_bienvenida()
-    jugar()
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ventana = VentanaAhorcado()
+    ventana.show()
+    sys.exit(app.exec())
