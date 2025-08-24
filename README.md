@@ -5,7 +5,7 @@ Este es un proyecto del clásico juego del Ahorcado, desarrollado en Python con 
 El juego funciona eligiendo una palabra secreta al azar de una lista predefinida. La palabra se oculta y el jugador tiene un número limitado de intentos para adivinarla, proponiendo letras una a una. Si la letra es correcta, se revela su posición en la palabra; si es incorrecta, se dibuja una parte del ahorcado.
 
 💻 Análisis del Código
-Tu código está estructurado de manera modular y organizada dentro de una clase principal llamada VentanaAhorcado. Aquí te explico cómo funcionan sus componentes clave:
+El código está estructurado de manera modular y organizada dentro de una clase principal llamada VentanaAhorcado. Aquí te explico cómo funcionan sus componentes clave:
 
 Estructuras de Datos:
 
