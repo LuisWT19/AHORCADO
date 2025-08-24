@@ -38,7 +38,7 @@ Abre tu terminal y clona el proyecto con el siguiente comando:
 
 Bash
 
-git clone https://github.com/tu-usuario/AHORCADO.git
+git clone https://github.com/LuisWT19/AHORCADO.git
 
 Navega al directorio del proyecto:
 
