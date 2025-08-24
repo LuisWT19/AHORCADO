@@ -29,20 +29,25 @@ Lógica Principal: El código hace uso de sentencias if/else para la toma de dec
 Sigue estos pasos para ejecutar el juego en tu computadora.
 
 1. Requisitos Previos
+
 Asegúrate de tener instalado Python y pip.
 
 2. Clonar el Repositorio
+
 Abre tu terminal y clona el proyecto con el siguiente comando:
 
 Bash
 
 git clone https://github.com/tu-usuario/AHORCADO.git
+
 Navega al directorio del proyecto:
 
 Bash
 
 cd AHORCADO
+
 3. Instalación de la Librería PyQt6
+
 Para ejecutar el juego, necesitas instalar la librería PyQt6. Se recomienda usar un entorno virtual para mantener las dependencias del proyecto aisladas.
 
 Crear y activar el entorno virtual:
@@ -58,7 +63,9 @@ Instalar la librería:
 Bash
 
 pip install PyQt6
+
 4. Ejecutar el Juego
+
 Con el entorno activado, simplemente ejecuta el archivo principal del código:
 
 
